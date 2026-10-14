@@ -1,5 +1,6 @@
 {
   "name": "Leaf PDF Editor",
+  "dir": "ltr",
   "short_name": "Leaf PDF",
   "description": "Free PDF editor that runs in your browser. Edit text, add images and save. No sign-in, no uploads.",
   "id": "./",
