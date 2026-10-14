@@ -1,11 +1,31 @@
 # Leaf – Free PDF Editor
 
+Made by **Mokuttan Labs**.
+
 A free PDF editor that runs **entirely in the browser**. Open a PDF, change its text, add text or images, highlight, draw, delete pages, and save the result to your device.
 
 - No sign-in, no server, no database, no cost.
 - Files are never uploaded. All work happens in the browser tab.
 - Installable on Android, iPhone, Windows, Mac and Linux (PWA), and works offline.
 - Can be packaged as an Android APK (see [Part 5](#5-make-an-android-apk)).
+
+---
+
+## Quick start on a phone, without hosting (single file)
+
+If you unzipped the project on a phone and opened `index.html` straight from the file manager, you will see **"The PDF engine did not load"**. That is expected. A browser that opens one file from storage cannot read the other files next to it (the `vendor/` folder), and installing or offline mode needs `https://`.
+
+Use **`leaf-single-file.html`** instead. It is the same app with the PDF libraries and fonts built into one file, so it works with no hosting and no internet.
+
+**Android**
+1. Copy `leaf-single-file.html` to your Downloads folder.
+2. Open it with **Chrome**. In the Files app, tap the file and choose **Chrome**. Or type `file:///sdcard/Download/leaf-single-file.html` in Chrome's address bar.
+3. Tap **Open a PDF**. Tip: in Chrome's menu you can add the page to your home screen as a shortcut.
+
+**iPhone / iPad**
+Safari's Files preview does not run web apps from a local file, so host the folder (see Part 3) and use Add to Home Screen (Part 4).
+
+The single file cannot be "installed" as an app and does not auto-update. For the installable app or the APK, use the hosted version.
 
 ---
 
@@ -30,6 +50,7 @@ A free PDF editor that runs **entirely in the browser**. Open a PDF, change its 
 ```
 leaf-pdf-editor/
 ├── index.html              The whole app: layout, styles and logic in one file
+├── leaf-single-file.html   Same app with everything built in. Works from a phone's file manager
 ├── manifest.webmanifest    Makes the app installable (name, icons, colours)
 ├── sw.js                   Service worker: caches files so the app works offline
 ├── package.json            Only used for the optional "npm start" local server
@@ -109,11 +130,15 @@ Once the site is online:
 | **iPhone / iPad (Safari)** | Open the link in Safari. Tap **Share** → **Add to Home Screen**. (iOS does not show an install button.) |
 | **Windows / Mac / Linux (Chrome or Edge)** | Click the install icon at the right of the address bar, or the **Install** button in Leaf. |
 
+The **Install app** button in Leaf's top bar does this for you. If the browser offers one-tap install, it shows the prompt. Otherwise it shows the exact steps for your device.
+
 After installing, Leaf opens full screen like a normal app and works without internet. On Android and desktop Chrome it also appears in "Open with" for `.pdf` files.
 
 ---
 
-## 5. Make an Android APK
+## 5. Make an Android APK (optional, and usually not needed)
+
+> **If an APK says "App not installed" or "This app cannot be installed":** this is common with APKs generated from websites. The usual causes are an APK that was not signed, an older copy of the app with a different signature already on the phone (uninstall it first), a phone that blocks unknown sources or Play Protect, or a download that did not finish. The simplest fix is to skip the APK and use **Add to Home screen** (Part 4). It gives the same result: an icon on your home screen that opens Leaf full screen, with no installer errors.
 
 An APK is optional. The installed web app above already behaves like an app. Make an APK if you want a file to share or to publish on the Play Store.
 
@@ -155,7 +180,7 @@ Create a Google Play developer account (one-time fee of about US$25), upload the
 7. **Pages** – open the page list with the pages button in the bottom bar. Hover or tap the **×** on a thumbnail to delete a page.
 8. **Zoom** – use the **−/+** and **Fit** buttons, pinch on a phone, or Ctrl + mouse wheel on desktop.
 9. **Undo / redo** – buttons at the top, or Ctrl+Z / Ctrl+Y.
-10. **Save PDF** – creates `yourfile-edited.pdf` and downloads it to your device (Ctrl+S also works). Your original file is never changed.
+10. **Save PDF** – a box asks what to call the file. Type any name you like (the app adds `.pdf`), then tap **Save**. It downloads to your device. Characters that are not allowed in file names are removed automatically. The box suggests `originalname-edited` and remembers your last name during the session (Ctrl+S also opens it). Your original file is never changed.
 
 ### Keyboard shortcuts
 | Keys | Action |
@@ -178,7 +203,7 @@ Create a Google Play developer account (one-time fee of about US$25), upload the
 1. `loadFile()` reads the chosen file into memory and checks it really starts with `%PDF`.
 2. pdf.js renders each page to a `<canvas>` lazily (only pages near the screen), and extracts text positions per page (`getRuns()`).
 3. Each page has an overlay `<div class="ov">`. Everything the user adds is stored as a plain object in `pages[i].objects` in PDF-point coordinates (top-left origin at 100% zoom): `text`, `image`, `rect`, `draw`, and `cover` (the block that hides original text).
-4. Clicking existing text in **Edit text** mode creates a `cover` object (colour sampled from the rendered page) plus a `text` object with the same string, font family guess, size and sampled colour.
+4. Clicking existing text in **Edit text** mode creates a `cover` object plus a `text` object with the same string, font family guess, size and colour. The `cover` is built by `buildPatch()`: it re-draws that one line at high resolution, finds the letter pixels, and fills only those pixels with the nearest clean background colour. The result is an opaque image of the page's own pixels with the old letters removed, so watermarks, gradients and table lines match exactly and no box shows. (If that ever fails, it falls back to a plain colour block.)
 5. History is a list of JSON snapshots of all objects, which gives undo and redo.
 6. `savePdf()` loads the original bytes with pdf-lib, draws every object onto the right page (handling page rotation through pdf.js's `convertToPdfPoint`), removes deleted pages, and downloads the result.
 7. Text that standard PDF fonts cannot encode (for example Hindi, Tamil, Arabic, Chinese) is drawn to a canvas and embedded as an image so it still appears correctly.
@@ -188,11 +213,13 @@ Create a Google Play developer account (one-time fee of about US$25), upload the
 |---|---|
 | `const TOOLS` | Toolbar buttons and hints |
 | `const DEF` | Default colours, sizes and opacity per tool |
-| `getRuns` / `editRun` | Detect and edit existing PDF text |
+| `getRuns` / `editRun` / `buildPatch` | Detect existing PDF text, edit it, and erase the old letters invisibly |
 | `makeEl` / `startDrag` / `startResize` | Selecting, moving, resizing objects |
 | `snap` / `commit` / `undo` | History |
 | `savePdf` | Writes the final PDF |
+| `askName` / `savePdf` | Asks for the file name, then writes the final PDF |
 | `deliver` | Downloads the file (uses a normal download link) |
+| `btnInstall` handler | Add to Home screen prompt or device-specific steps |
 
 **Offline and updates:** `sw.js` caches every file listed in `ASSETS`. When you change any file, edit `CACHE_VERSION` in `sw.js` (for example `leaf-v2`). Installed apps then fetch the new version on their next launch.
 
@@ -207,6 +234,7 @@ If you paste this project into a tool such as Bolt, Lovable, Replit, v0, Cursor 
 
 ## 8. Customising
 
+- **Footer credit** – edit the `<footer class="foot">` line near the bottom of the page markup in `index.html`.
 - **Name and colours** – edit `manifest.webmanifest` (`name`, `short_name`, `theme_color`) and the CSS variables at the top of `index.html` (`--accent` and others, with a dark-mode block below).
 - **Icons** – replace the PNGs in `icons/` keeping the same sizes. Make the maskable one with the artwork inside the central 80%.
 - **Default fonts or sizes** – change `DEF` in the script.
@@ -217,7 +245,7 @@ If you paste this project into a tool such as Bolt, Lovable, Replit, v0, Cursor 
 
 ## 9. Known limits
 
-- **Edited text is covered, not erased.** The original text stays inside the saved file underneath a matching-colour block, so it can still be selected or extracted with other tools. Do not rely on this to redact secrets. For real redaction use a dedicated tool.
+- **Edited text is covered, not erased.** The original text stays inside the saved file underneath a patch image, so it can still be selected or extracted with other tools. Do not rely on this to redact secrets. For real redaction use a dedicated tool.
 - **Not a full Acrobat clone.** There is no paragraph re-flow, no embedded-font matching, no form-field editing, no digital signatures, no OCR for scanned pages.
 - **Scanned PDFs** are images, so use **Add text** and **Whiteout** on them.
 - **Password-protected PDFs** are not opened. Remove the password first.
@@ -231,6 +259,7 @@ If you paste this project into a tool such as Bolt, Lovable, Replit, v0, Cursor 
 
 | Problem | Fix |
 |---|---|
+| "The PDF engine did not load" | You opened `index.html` straight from storage. Use `leaf-single-file.html`, or host the folder (Part 3) and open the https link. |
 | Open button does nothing | Use a current browser. Some in-app viewers (inside chat or social apps) block file pickers; open the link in Chrome or Safari. |
 | "Only PDF files can be opened here" | The file is not a real PDF. Export it again from the source app. |
 | "Password-protected" message | Remove the password in the original viewer, then reopen. |
@@ -244,7 +273,7 @@ If you paste this project into a tool such as Bolt, Lovable, Replit, v0, Cursor 
 
 ## 11. Licences
 
-- App code: MIT. Do whatever you like with it.
+- App code: MIT, copyright Mokuttan Labs. Do whatever you like with it, and please keep the footer credit if you redistribute it.
 - pdf.js – Apache License 2.0 (`vendor/LICENSE-pdfjs.txt`)
 - pdf-lib – MIT (`vendor/LICENSE-pdf-lib.txt`)
 - Figtree and Instrument Serif – SIL Open Font License (`vendor/fonts/LICENSE-*.txt`)
