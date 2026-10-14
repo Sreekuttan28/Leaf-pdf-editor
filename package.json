@@ -1,0 +1,8 @@
+{
+  "name": "leaf-pdf-editor",
+  "version": "1.0.0",
+  "description": "Free, private, browser-based PDF editor (installable PWA).",
+  "private": true,
+  "scripts": { "start": "npx --yes serve -l 8080 ." },
+  "license": "MIT"
+}
