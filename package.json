@@ -4,5 +4,6 @@
   "description": "Free, private, browser-based PDF editor (installable PWA).",
   "private": true,
   "scripts": { "start": "npx --yes serve -l 8080 ." },
+  "author": "Mokuttan Labs",
   "license": "MIT"
 }
