@@ -4,7 +4,7 @@
 
 Leaf is a free PDF editor that runs in your browser. No sign-in, no cost, and your files never leave your device.
 
-Made by **Mokuttan Labs**.
+Made by **[Mokuttan Labs](https://sreekuttan28.github.io/Mokuttan-Lab/)**.
 
 ---
 
