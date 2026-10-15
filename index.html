@@ -6,6 +6,7 @@
 <title>Leaf – Free PDF Editor</title>
 <meta name="description" content="Leaf is a free PDF editor that runs entirely in your browser. Edit text, add images, highlight and save. No sign-in, no uploads.">
 <meta name="theme-color" content="#0b7a6b">
+<script>try{var __t=localStorage.getItem("leaf-theme");if(__t==="light"||__t==="dark")document.documentElement.setAttribute("data-theme",__t)}catch(e){}</script>
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Leaf PDF">
@@ -56,74 +57,6 @@ button,input,select{font:inherit;color:inherit}
 .filebtn .fin{position:absolute;inset:0;width:100%;height:100%;margin:0;padding:0;opacity:0;cursor:pointer;font-size:0}
 #viewer{touch-action:pan-x pan-y}
 .btn:focus-visible,select:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-
-/* ---------- Splash Screen Loading Animation ---------- */
-#splash {
-  position: fixed;
-  inset: 0;
-  z-index: 100;
-  background: var(--desk);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.4s;
-}
-
-#splash.fade-out {
-  opacity: 0;
-  visibility: hidden;
-  pointer-events: none;
-}
-
-.splash-content {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 12px;
-  animation: splashEntrance 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
-
-.splash-logo {
-  width: 48px;
-  height: 48px;
-  color: var(--accent);
-  filter: drop-shadow(0 4px 12px rgba(11, 122, 107, 0.25));
-}
-
-.splash-title {
-  font-family: "Instrument Serif", Georgia, serif;
-  font-size: 32px;
-  line-height: 1;
-  color: var(--ink);
-  letter-spacing: -0.01em;
-}
-
-.splash-spinner {
-  width: 20px;
-  height: 20px;
-  border: 2px solid var(--line);
-  border-top-color: var(--accent);
-  border-radius: 50%;
-  animation: splashSpin 0.8s linear infinite;
-  margin-top: 4px;
-}
-
-@keyframes splashEntrance {
-  0% {
-    opacity: 0;
-    transform: scale(0.9) translateY(8px);
-  }
-  100% {
-    opacity: 1;
-    transform: scale(1) translateY(0);
-  }
-}
-
-@keyframes splashSpin {
-  to {
-    transform: rotate(360deg);
-  }
-}
 
 .top{display:flex;align-items:center;gap:6px;padding:8px 12px;background:var(--panel);border-bottom:1px solid var(--line)}
 .brand{display:flex;align-items:center;gap:8px;font-family:"Instrument Serif",Georgia,serif;font-size:24px;line-height:1;margin-right:6px}
@@ -232,6 +165,71 @@ body.dragging #viewer{outline:3px dashed var(--accent);outline-offset:-10px}
 .foot{flex:none;text-align:center;font-size:12px;color:var(--ink2);padding:6px 12px;background:var(--panel);border-top:1px solid var(--line)}
 .foot strong{color:var(--ink);font-weight:600}
 
+/* theme transitions + app intro */
+body,.top,.tools,.props,#thumbs,.foot,.zoombar{transition:background-color .35s ease,color .35s ease,border-color .35s ease,opacity .6s ease,transform .6s cubic-bezier(.2,.8,.2,1)}
+body.booting .top{opacity:0;transform:translateY(-10px)}
+body.booting .tools{opacity:0;transform:translateY(-8px)}
+body.booting .props,body.booting .work,body.booting .foot{opacity:0;transform:translateY(10px)}
+.tools{transition-delay:0s,0s,0s,.06s,.06s}
+.work,.foot{transition:opacity .6s ease .12s,transform .6s cubic-bezier(.2,.8,.2,1) .12s}
+
+/* dark / light switch */
+.theme{position:relative;width:58px;height:32px;border-radius:999px;border:1px solid var(--line);background:var(--hover);cursor:pointer;flex:none;padding:0;overflow:hidden}
+.theme .ic{position:absolute;top:50%;margin-top:-7px;width:14px;height:14px;color:var(--ink2);opacity:.7}
+.theme .ic.l{left:9px}.theme .ic.r{right:9px}
+.theme .knob{position:absolute;top:3px;left:3px;width:24px;height:24px;border-radius:50%;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center;transition:transform .4s cubic-bezier(.3,1.5,.5,1);box-shadow:0 1px 4px rgba(0,0,0,.3)}
+.theme .knob svg{width:14px;height:14px;animation:spinIn .45s ease}
+.theme[aria-checked="true"] .knob{transform:translateX(26px)}
+.theme .k-moon,.theme[aria-checked="true"] .k-sun{display:none}
+.theme[aria-checked="true"] .k-moon{display:block}
+@keyframes spinIn{from{transform:rotate(-120deg) scale(.4);opacity:0}to{transform:none;opacity:1}}
+.btn.pulse{animation:pulse 1.6s ease-in-out infinite}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(11,122,107,.55)}70%{box-shadow:0 0 0 10px rgba(11,122,107,0)}100%{box-shadow:0 0 0 0 rgba(11,122,107,0)}}
+#viewer[data-tool=stamp] .ov{cursor:copy}
+.tgl.stamp{font-size:16px}
+
+/* modals: signature + OCR */
+.modal{position:fixed;inset:0;z-index:60;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;padding:16px}
+.modal[hidden]{display:none}
+.modal .card{background:var(--panel);border-radius:14px;padding:20px;max-width:560px;width:100%;box-shadow:0 12px 40px rgba(0,0,0,.35);max-height:90vh;overflow:auto}
+.modal .row{display:flex;gap:8px;justify-content:flex-end;align-items:center;margin-top:14px;flex-wrap:wrap}
+#signPad{display:block;width:100%;height:auto;aspect-ratio:5/2;border:1px solid var(--line);border-radius:10px;touch-action:none;cursor:crosshair;background:linear-gradient(#fff 0 69%,#c9d0da 69% calc(69% + 1px),#fff calc(69% + 1px))}
+.ink{width:30px;height:30px;border-radius:50%;border:2px solid transparent;background:var(--c);padding:0;cursor:pointer;flex:none}
+.ink[aria-pressed="true"]{border-color:var(--accent);box-shadow:0 0 0 3px var(--panel) inset}
+.fld{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:10px 0;font-size:14px}
+.fld select{height:40px;border:1px solid var(--line);border-radius:8px;background:var(--panel);padding:0 8px;font-size:16px;min-width:160px}
+.pbar{height:8px;background:var(--hover);border-radius:8px;overflow:hidden;margin:14px 0 6px}
+.pbar i{display:block;height:100%;width:0;background:var(--accent);transition:width .25s}
+
+/* ---------- opening animation (3 seconds) ---------- */
+#splash{position:fixed;inset:0;z-index:200;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff;overflow:hidden;cursor:pointer;
+  background:linear-gradient(160deg,#064f45 0%,#0b7a6b 55%,#12957f 100%);animation:spOut .5s ease 2.5s forwards}
+#splash.skip{animation:spOut .25s ease forwards}
+@keyframes spOut{to{opacity:0;transform:scale(1.05);visibility:hidden}}
+.sp-glow{position:absolute;width:140vmax;height:140vmax;left:50%;top:50%;margin:-70vmax 0 0 -70vmax;background:radial-gradient(circle,rgba(255,255,255,.17),rgba(255,255,255,0) 36%);animation:spGlow 3s ease-out both}
+@keyframes spGlow{0%{transform:scale(.3);opacity:0}40%{opacity:1}100%{transform:scale(1);opacity:.75}}
+.sp-center{position:relative;display:flex;flex-direction:column;align-items:center;gap:16px}
+.sp-leaf{width:108px;height:108px;overflow:visible;animation:spPop .6s cubic-bezier(.3,1.5,.5,1) 1.3s both}
+@keyframes spPop{0%{transform:scale(1)}50%{transform:scale(1.12)}100%{transform:scale(1)}}
+.sp-ring{fill:none;stroke:rgba(255,255,255,.38);stroke-width:1.1;stroke-dasharray:100;stroke-dashoffset:100;animation:spDraw 1.2s ease-out .1s forwards}
+.sp-lf{fill:rgba(255,255,255,0);stroke:#fff;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:100;stroke-dashoffset:100;animation:spDraw 1.1s cubic-bezier(.5,0,.2,1) .25s forwards,spFill .5s ease 1.3s forwards}
+.sp-vein{fill:none;stroke:#0b7a6b;stroke-width:2.4;stroke-linecap:round;stroke-dasharray:100;stroke-dashoffset:100;animation:spDraw .5s ease 1.3s forwards}
+@keyframes spDraw{to{stroke-dashoffset:0}}
+@keyframes spFill{to{fill:rgba(255,255,255,1)}}
+.sp-word{font-family:"Instrument Serif",Georgia,serif;font-size:60px;line-height:1;display:flex}
+.sp-word span{display:inline-block;opacity:0;transform:translateY(18px);filter:blur(8px);animation:spLetter .65s cubic-bezier(.2,.8,.2,1) calc(1.25s + var(--i)*.09s) forwards}
+@keyframes spLetter{to{opacity:1;transform:none;filter:none}}
+.sp-tag{font-size:13px;letter-spacing:.16em;text-transform:uppercase;opacity:0;animation:spFade .7s ease 1.75s forwards}
+@keyframes spFade{to{opacity:.88}}
+.sp-bar{position:absolute;left:50%;bottom:calc(92px + env(safe-area-inset-bottom,0px));width:120px;height:3px;margin-left:-60px;border-radius:3px;background:rgba(255,255,255,.22);overflow:hidden}
+.sp-bar i{display:block;height:100%;background:#fff;transform-origin:left;transform:scaleX(0);animation:spBar 2.3s cubic-bezier(.4,0,.2,1) .2s forwards}
+@keyframes spBar{to{transform:scaleX(1)}}
+.sp-credit{position:absolute;bottom:calc(36px + env(safe-area-inset-bottom,0px));font-size:11px;letter-spacing:.22em;text-transform:uppercase;opacity:0;animation:spFade .7s ease 1s forwards}
+@media (prefers-reduced-motion:reduce){
+  .sp-ring,.sp-vein{stroke-dashoffset:0}.sp-lf{stroke-dashoffset:0;fill:#fff}
+  .sp-word span,.sp-tag,.sp-credit{opacity:1;transform:none;filter:none}.sp-bar i{transform:none}
+}
+
 @media (max-width:760px){
   .fname{display:none}
   .tools .lbl{display:none}
@@ -250,18 +248,21 @@ body.dragging #viewer{outline:3px dashed var(--accent);outline-offset:-10px}
 <script src="vendor/pdf.min.js"></script>
 <script src="vendor/pdf-lib.min.js"></script>
 </head>
-<body class="thumbs-open">
+<body class="thumbs-open booting">
 
-<!-- App Splash Screen / Loading Animation -->
-<div id="splash">
-  <div class="splash-content">
-    <svg class="splash-logo" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-      <path d="M5 19C5 9.5 11 4 20 4c0 9-5.500 15-15 15z"/>
-      <path d="M5 19l9-9"/>
+<div id="splash" aria-hidden="true">
+  <div class="sp-glow"></div>
+  <div class="sp-center">
+    <svg class="sp-leaf" viewBox="0 0 64 64" aria-hidden="true">
+      <circle class="sp-ring" cx="32" cy="32" r="29.500" pathLength="100"/>
+      <path class="sp-lf" pathLength="100" d="M16 49C16 27 29 15 50 15c0 21-12 34-34 34z"/>
+      <path class="sp-vein" pathLength="100" d="M16 49l22-22"/>
     </svg>
-    <div class="splash-title">Leaf</div>
-    <div class="splash-spinner"></div>
+    <div class="sp-word"><span style="--i:0">L</span><span style="--i:1">e</span><span style="--i:2">a</span><span style="--i:3">f</span></div>
+    <div class="sp-tag">Edit PDFs. Privately. Free.</div>
   </div>
+  <div class="sp-bar"><i></i></div>
+  <div class="sp-credit">by Mokuttan Labs</div>
 </div>
 
 <header class="top">
@@ -272,6 +273,14 @@ body.dragging #viewer{outline:3px dashed var(--accent);outline-offset:-10px}
   <button class="btn" id="btnUndo" data-ic="undo" aria-label="Undo" title="Undo (Ctrl+Z)" disabled></button>
   <button class="btn" id="btnRedo" data-ic="redo" aria-label="Redo" title="Redo (Ctrl+Y)" disabled></button>
   <button class="btn" id="btnInstall" data-ic="phone" title="Add Leaf to your home screen" aria-label="Add Leaf to your home screen"><span class="lbl">Install app</span></button>
+  <button class="theme" id="btnTheme" role="switch" aria-checked="false" aria-label="Dark mode" title="Switch to dark mode">
+    <svg class="ic l" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.900 4.900l1.400 1.400M17.700 17.700l1.400 1.400M2 12h2M20 12h2M4.900 19.100l1.400-1.400M17.700 6.300l1.400-1.400"/></svg>
+    <svg class="ic r" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.800A9 9 0 1111.200 3a7 7 0 009.800 9.800z"/></svg>
+    <span class="knob">
+      <svg class="k-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.200" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.900 4.900l1.400 1.400M17.700 17.700l1.400 1.400M2 12h2M20 12h2M4.900 19.100l1.400-1.400M17.700 6.300l1.400-1.400"/></svg>
+      <svg class="k-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.200" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.800A9 9 0 1111.200 3a7 7 0 009.800 9.800z"/></svg>
+    </span>
+  </button>
   <button class="btn primary" id="btnSave" data-ic="down" aria-label="Save PDF"><span class="lbl">Save PDF</span></button>
 </header>
 
@@ -333,6 +342,30 @@ body.dragging #viewer{outline:3px dashed var(--accent);outline-offset:-10px}
     <div class="row"><button class="btn primary" id="infoOk">Got it</button></div>
   </div>
 </div>
+<div id="signModal" class="modal" hidden>
+  <div class="card">
+    <div class="mtitle">Draw your signature</div>
+    <canvas id="signPad" width="1000" height="400" aria-label="Signature drawing area"></canvas>
+    <div class="row">
+      <button class="ink" data-ink="#111111" style="--c:#111111" aria-label="Black ink" aria-pressed="true"></button>
+      <button class="ink" data-ink="#1f3fbf" style="--c:#1f3fbf" aria-label="Blue ink" aria-pressed="false"></button>
+      <button class="btn" id="signClear">Clear</button>
+      <span class="sp"></span>
+      <button class="btn" id="signCancel">Cancel</button>
+      <button class="btn primary" id="signOk">Add to page</button>
+    </div>
+  </div>
+</div>
+<div id="ocrModal" class="modal" hidden>
+  <div class="card">
+    <div class="mtitle">Make scanned text editable</div>
+    <p class="nhint">Leaf reads the page the way a scanner app does (OCR), so you can tap any line and change it. This happens on your device. Nothing is uploaded.</p>
+    <label class="fld">Language<select id="ocrLang"><option value="eng">English</option><option value="hin">Hindi (experimental)</option><option value="eng+hin">English + Hindi (experimental)</option></select></label>
+    <label class="fld">Pages<select id="ocrScope"><option value="page">Current page only</option><option value="all">All pages</option></select></label>
+    <div id="ocrProg" hidden><div class="pbar"><i id="ocrBar"></i></div><div class="nhint" id="ocrMsg"></div></div>
+    <div class="row"><button class="btn" id="ocrCancel">Cancel</button><button class="btn primary" id="ocrGo">Start scanning</button></div>
+  </div>
+</div>
 <div id="busy" hidden></div>
 <div id="toast" hidden></div>
 <div id="modal" hidden><div class="card"><p></p><div class="row"><button class="btn" data-a="0">Cancel</button><button class="btn primary" data-a="1">Continue</button></div></div></div>
@@ -360,7 +393,12 @@ const ICON = {
   folder:'<path d="M3 7a2 2 0 012-2h4l2 2h8a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>',
   minus:'<path d="M5 12h14"/>', plus:'<path d="M12 5v14M5 12h14"/>',
   pages:'<rect x="4" y="3" width="12" height="16" rx="1.500"/><path d="M8 21h10a2 2 0 002-2V7"/>',
-  phone:'<rect x="6.500" y="2" width="11" height="20" rx="2.500"/><path d="M10.500 18.500h3"/>'
+  phone:'<rect x="6.500" y="2" width="11" height="20" rx="2.500"/><path d="M10.500 18.500h3"/>',
+  scan:'<path d="M4 8V5a1 1 0 011-1h3M16 4h3a1 1 0 011 1v3M20 16v3a1 1 0 01-1 1h-3M8 20H5a1 1 0 01-1-1v-3M7 12h10"/>',
+  sign:'<path d="M3 17c3-6 5-9 7-9s0 6 2 6 3-4 4-4 1 3 3 3"/><path d="M3 21h18"/>',
+  check:'<path d="M5 12.500l4.500 4.500L19 7"/>',
+  help:'<circle cx="12" cy="12" r="9"/><path d="M9.500 9.500a2.500 2.500 0 114 2c-1 .8-1.500 1.200-1.500 2.500M12 17h.01"/>',
+  copy:'<rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V6a2 2 0 012-2h9"/>'
 };
 const icon = n => `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICON[n]}</svg>`;
 document.querySelectorAll('[data-ic]').forEach(b => b.insertAdjacentHTML('afterbegin', icon(b.dataset.ic)));
@@ -383,23 +421,29 @@ const DEF = {
   rect:{fill:null, stroke:'#d93025', strokeW:2, opacity:1},
   highlight:{fill:'#ffe14d', stroke:null, strokeW:0, opacity:.4},
   whiteout:{fill:'#ffffff', stroke:null, strokeW:0, opacity:1},
-  draw:{stroke:'#d93025', strokeW:3, opacity:1}
+  draw:{stroke:'#d93025', strokeW:3, opacity:1},
+  stamp:{type:'✓', size:22, color:'#0a7d3b'}
 };
 const TOOLS = [
   {id:'select', label:'Select', ic:'cursor', hint:'Click an item to move or resize it. Double-click text to edit it.'},
   {id:'edittext', label:'Edit text', ic:'type', hint:'Click any text on the page to change it.'},
+  {id:'ocr', label:'Scan text', ic:'scan', fn:'ocr'},
   {id:'text', label:'Add text', ic:'textbox', hint:'Click anywhere on the page, then type.'},
   {id:'image', label:'Image', ic:'image', action:true},
+  {id:'sign', label:'Sign', ic:'sign', fn:'sign'},
+  {id:'stamp', label:'Stamp', ic:'check', hint:'Pick a stamp, then click the page to place it.'},
   {sep:true},
   {id:'draw', label:'Draw', ic:'pen', hint:'Draw with your finger or mouse.'},
   {id:'highlight', label:'Highlight', ic:'marker', hint:'Drag over text to highlight it.'},
   {id:'rect', label:'Box', ic:'rect', hint:'Drag to draw a box.'},
-  {id:'whiteout', label:'Whiteout', ic:'eraser', hint:'Drag to cover part of the page with a solid block.'}
+  {id:'whiteout', label:'Whiteout', ic:'eraser', hint:'Drag to cover part of the page with a solid block.'},
+  {sep:true},
+  {id:'help', label:'Help', ic:'help', fn:'help'}
 ];
 
 /* ---------- state ---------- */
 let pdfBytes = null, pdfDoc = null, fileName = 'document.pdf';
-let pages = [];         // {src,pdf,vp,w,h,objects,deleted,runsP,wrap,el,canvas,ov,thumb,tcanvas,rendered,rtoken,task}
+let pages = [];           // {src,pdf,vp,w,h,objects,deleted,runsP,wrap,el,canvas,ov,thumb,tcanvas,rendered,rtoken,task}
 let tool = 'select', zoom = 1, sel = null, selPage = null, uid = 1, dirty = false, curPage = 0;
 const images = {};
 let hist = [], hi = -1, io = null, tio = null;
@@ -423,12 +467,13 @@ const clamp = (v,a,b) => Math.min(b,Math.max(a,v));
 const toolsEl = $('#tools');
 TOOLS.forEach(t=>{
   if(t.sep){ toolsEl.insertAdjacentHTML('beforeend','<div class="sep"></div>'); return; }
-  const b=document.createElement(t.action?'label':'button'); b.className='btn'+(t.action?' filebtn':''); b.dataset.tool=t.id; b.title=t.label;
+  const b=document.createElement(t.action?'label':'button'); b.className='btn'+(t.action?' filebtn':''); if(t.fn) b.dataset.fn=t.fn; else b.dataset.tool=t.id; b.title=t.label;
   b.setAttribute('aria-label',t.label); b.innerHTML=icon(t.ic)+`<span class="lbl">${t.label}</span>`;
   if(t.action){
     const inp=document.createElement('input'); inp.type='file'; inp.accept='image/*'; inp.className='fin'; inp.setAttribute('aria-label','Choose an image');
     inp.addEventListener('change',onImagePicked); b.append(inp);
-  } else b.addEventListener('click',()=>setTool(t.id));
+  } else if(t.fn) b.addEventListener('click',()=>FN[t.fn]());
+  else b.addEventListener('click',()=>setTool(t.id));
   toolsEl.append(b);
 });
 function setTool(t){
@@ -446,6 +491,7 @@ function renderProps(){
   else if(tool==='text'||tool==='edittext'){ kind='text'; src=DEF.text; }
   else if(tool==='rect'||tool==='highlight'||tool==='whiteout'){ kind='rect'; src=DEF[tool]; }
   else if(tool==='draw'){ kind='draw'; src=DEF.draw; }
+  else if(tool==='stamp'){ kind='stamp'; src=DEF.stamp; }
   let h='';
   if(kind==='text'){
     h+=`<label class="ctl"><span>Font</span><select data-k="font">${Object.entries(FONTS).map(([k,v])=>`<option value="${k}" ${src.font===k?'selected':''}>${v.label}</option>`).join('')}</select></label>`;
@@ -466,9 +512,14 @@ function renderProps(){
     h+=`<label class="ctl"><span>Color</span><input type="color" data-k="stroke" value="${src.stroke}"></label>`;
     h+=`<label class="ctl"><span>Width</span><input type="number" min="1" max="40" step="1" data-k="strokeW" value="${src.strokeW}"></label>`;
     h+=`<label class="ctl"><span>Opacity</span><input type="range" min="5" max="100" data-k="opacity" value="${Math.round((src.opacity??1)*100)}"></label>`;
+  } else if(kind==='stamp'){
+    h+=['✓','✗','●','Date'].map(x=>`<button class="btn tgl stamp" data-st="${x}" aria-pressed="${src.type===x}" aria-label="Stamp ${x}" style="${x==='Date'?'width:auto;padding:0 10px;font-size:13px':''}">${x}</button>`).join('');
+    h+=`<label class="ctl"><span>Size</span><input type="number" min="8" max="120" step="1" data-k="size" value="${Math.round(src.size)}"></label>`;
+    h+=`<label class="ctl"><span>Color</span><input type="color" data-k="color" value="${src.color}"></label>`;
   } else if(kind==='image'){
     h+=`<label class="ctl"><span>Opacity</span><input type="range" min="5" max="100" data-k="opacity" value="${Math.round((src.opacity??1)*100)}"></label>`;
   }
+  if(s&&s.o.type!=='cover') h+=`<button class="btn" id="btnDup" title="Duplicate (Ctrl+D)">${icon('copy')}Duplicate</button>`;
   if(s) h+=`<button class="btn danger" id="btnDel">${icon('trash')}Delete</button>`;
   const th=TOOLS.find(t=>t.id===tool);
   if(th&&th.hint) h+=`<span class="hint">${th.hint}</span>`;
@@ -482,6 +533,8 @@ function renderProps(){
     setProp(k,!cur); b.setAttribute('aria-pressed',!cur); commit();
   }));
   const d=$('#btnDel'); if(d) d.addEventListener('click',deleteSel);
+  const du=$('#btnDup'); if(du) du.addEventListener('click',dupSel);
+  bar.querySelectorAll('[data-st]').forEach(b=>b.addEventListener('click',()=>{ DEF.stamp.type=b.dataset.st; renderProps(); }));
 }
 function setProp(key,val){
   const f=sel?findObj(sel):null; const tgt=f?f.o:null;
@@ -623,7 +676,7 @@ function startEdit(o,pi){
       if(orig||o.hasCover) { delete o.fresh; commit(); }
       return;
     }
-    if(o.fromRun && o.fresh && t===orig){            // opened but unchanged: restore the original untouched
+    if(o.fromRun && o.fresh && t===orig){           // opened but unchanged: restore the original untouched
       const i=arr.indexOf(o); if(i>=0) arr.splice(i,1);
       const ci=arr.findIndex(c=>c.id===o.coverId); if(ci>=0) arr.splice(ci,1);
       if(sel===o.id){ sel=null; selPage=null; }
@@ -680,6 +733,7 @@ async function addRuns(pi){
   const p=pages[pi]; if(!p.ov) return;
   let runs=[]; try{ runs=await getRuns(p); }catch(e){ console.warn(e); }
   if(tool!=='edittext') return;
+  if(!runs.length && pi===curPage && !p.hinted){ p.hinted=true; toast('No selectable text on this page. Tap Scan text to read it.'); const sb=document.querySelector('[data-fn=ocr]'); if(sb) sb.classList.add('pulse'); }
   p.ov.querySelectorAll('.run').forEach(r=>r.remove());
   const used=new Set(p.objects.filter(o=>o.type==='cover'&&o.runKey).map(o=>o.runKey));
   runs.forEach(r=>{
@@ -715,6 +769,11 @@ function sampleColors(pi,run){
   const hex=a=>'#'+a.map(v=>v.toString(16).padStart(2,'0')).join('');
   return {bg:hex(bg), fg:hex(fg)};
 }
+/* Re-draws just the area of one text line at high resolution, finds the letter pixels,
+   and fills ONLY those pixels with the nearest surrounding background colour.
+   The result is an opaque copy of the page's own pixels with the old letters removed,
+   so watermarks, gradients and table lines match exactly and no box is visible.
+   (Opaque on purpose: transparent PNG edges get a dark fringe in some PDF viewers.) */
 async function buildPatch(pi,run){
   const p=pages[pi]; let k=4;
   const bx=run.x-1, by=run.top, bw=run.w+2, bh=run.bh;
@@ -726,18 +785,21 @@ async function buildPatch(pi,run){
   const vp=p.pdf.getViewport({scale:k,offsetX:-bx*k,offsetY:-by*k});
   await p.pdf.render({canvasContext:ctx,viewport:vp}).promise;
   const im=ctx.getImageData(0,0,W,H), d=im.data, N=W*H;
+  // most common colour = background
   const cnt=new Map();
   for(let i=0;i<d.length;i+=4){ const key=((d[i]>>3)<<10)|((d[i+1]>>3)<<5)|(d[i+2]>>3); const e=cnt.get(key); if(e) e.n++; else cnt.set(key,{n:1,c:[d[i],d[i+1],d[i+2]]}); }
   let best=null; for(const e of cnt.values()) if(!best||e.n>best.n) best=e;
   const bg=best.c, dist=(i,c)=>Math.abs(d[i]-c[0])+Math.abs(d[i+1]-c[1])+Math.abs(d[i+2]-c[2]);
+  // text colour = pixel farthest from the background
   let far=0, fg=[17,17,17];
   for(let i=0;i<d.length;i+=4){ const t=dist(i,bg); if(t>far){ far=t; fg=[d[i],d[i+1],d[i+2]]; } }
   if(far<40) throw new Error('no text found');
   const thr=Math.max(30,far*.25);
   let mask=new Uint8Array(N);
   for(let q=0,i=0;q<N;q++,i+=4) if(dist(i,bg)>thr) mask[q]=1;
-  const r=Math.max(Math.round(k*1.6),Math.round(k*run.h*.05));
-  const grow=(m,len,lines,stride,step,rad)=>{
+  // grow the mask so anti-aliased edges are covered too
+  const r=Math.max(Math.round(k*1.6),Math.round(k*run.h*.05));   // ~1.5pt margin: PDF viewers smooth image edges
+  const grow=(m,len,lines,stride,step,rad)=>{               // 1-D max filter with prefix sums
     const out=new Uint8Array(N), pre=new Int32Array(len+1);
     for(let l=0;l<lines;l++){
       const base=l*stride; pre[0]=0;
@@ -747,8 +809,9 @@ async function buildPatch(pi,run){
     return out;
   };
   const widen=rad=>grow(grow(mask,W,H,W,1,rad),H,W,1,W,rad);
-  const paint=widen(r);
-  const excl=paint;
+  const paint=widen(r);            // pixels around the old letters that get re-filled
+  const excl=paint;                // everything else is clean background and is used as the source
+  // fill masked pixels with the nearest unmasked pixel colour (multi-source BFS)
   const rgb=new Uint8Array(N*3), done=new Uint8Array(N), qu=new Int32Array(N); let qh=0,qt=0;
   for(let q=0,i=0;q<N;q++,i+=4){ rgb[q*3]=d[i]; rgb[q*3+1]=d[i+1]; rgb[q*3+2]=d[i+2]; if(!excl[q]) done[q]=1; }
   for(let y=0;y<H;y++) for(let x=0;x<W;x++){ const q=y*W+x; if(!done[q]) continue;
@@ -773,7 +836,7 @@ async function editRun(pi,run){
       const patch=await buildPatch(pi,run); const id='cv'+(uid++);
       images[id]={url:patch.url,mime:'image/png'}; fg=patch.fg;
       cover={id:uid++,type:'cover',kind:'cover',x:patch.x,y:patch.y,w:patch.w,h:patch.h,img:id,runKey:run.key};
-    }catch(err){
+    }catch(err){                                   // fallback: plain colour block
       console.warn('patch failed, using block',err);
       const c=sampleColors(pi,run); fg=c.fg;
       cover={id:uid++,type:'cover',kind:'cover',x:run.x-1,y:run.top,w:run.w+2,h:run.bh,fill:c.bg,runKey:run.key};
@@ -803,6 +866,7 @@ function bindOverlay(ov,pi){
     e.preventDefault();
     const pt=pagePt(e,ov);
     if(tool==='text') placeText(pi,pt);
+    else if(tool==='stamp') placeStamp(pi,pt);
     else if(tool==='draw') startPen(pi,ov,pt);
     else startShape(pi,ov,pt,tool);
   });
@@ -886,7 +950,7 @@ async function loadFile(file){
     buildViewer();
     hist=[snap()]; hi=0; dirty=false; updateUndo();
     setTool('select');
-    viewer.scrollTop=0; curPage=0; updatePageLabel();
+    viewer.scrollTop=0; curPage=0; updatePageLabel(); detectScanned();
   }catch(err){
     console.error(err);
     toast(err&&err.message==='notpdf' ? 'Only PDF files can be opened here.' : err&&err.name==='PasswordException' ? 'This PDF is password-protected. Remove the password and try again.' : 'Could not open this PDF. The file may be damaged.');
@@ -918,7 +982,7 @@ function buildViewer(){
     th.innerHTML=`<canvas></canvas><span></span><button class="x" title="Delete this page" aria-label="Delete page">×</button>`;
     th.addEventListener('click',e=>{ if(e.target.closest('.x')) return; scrollToPage(i); });
     th.querySelector('.x').addEventListener('click',()=>deletePage(i));
-    \$('#thumbs').append(th); p.thumb=th; p.tcanvas=th.querySelector('canvas');
+    $('#thumbs').append(th); p.thumb=th; p.tcanvas=th.querySelector('canvas');
     const sc=112/p.w; p.tcanvas.width=Math.round(112); p.tcanvas.height=Math.round(p.h*sc);
     io.observe(wrap); tio.observe(th);
   });
@@ -951,13 +1015,13 @@ function setZoom(z){
   const ratio=viewer.scrollHeight?viewer.scrollTop/viewer.scrollHeight:0;
   zoom=z; sizePages(); renderAllOverlays();
   pages.forEach(p=>{ p.rendered=null; io.unobserve(p.wrap); io.observe(p.wrap); });
-  viewer.scrollTop=ratio*viewer.scrollHeight; \$('#zoomLbl').textContent=Math.round(z*100)+'%';
+  viewer.scrollTop=ratio*viewer.scrollHeight; $('#zoomLbl').textContent=Math.round(z*100)+'%';
 }
-\$('#zIn').onclick=()=>setZoom(zoom*1.2);
-\$('#zOut').onclick=()=>setZoom(zoom/1.2);
-\$('#zFit').onclick=()=>setZoom(fitZoom());
+$('#zIn').onclick=()=>setZoom(zoom*1.2);
+$('#zOut').onclick=()=>setZoom(zoom/1.2);
+$('#zFit').onclick=()=>setZoom(fitZoom());
 viewer.addEventListener('wheel',e=>{ if(e.ctrlKey&&pdfDoc){ e.preventDefault(); setZoom(zoom*(e.deltaY<0?1.08:.92)); } },{passive:false});
-\$('#btnThumbs').onclick=()=>document.body.classList.toggle('thumbs-open');
+$('#btnThumbs').onclick=()=>document.body.classList.toggle('thumbs-open');
 
 function scrollToPage(i){
   const p=pages[i]; if(!p) return;
@@ -967,7 +1031,7 @@ function scrollToPage(i){
 function visibleIndexes(){ return pages.map((p,i)=>i).filter(i=>!pages[i].deleted); }
 function updatePageLabel(){
   const vis=visibleIndexes(); const pos=Math.max(0,vis.indexOf(curPage));
-  \$('#pageLbl').textContent=`Page ${pos+1} of ${vis.length}`;
+  $('#pageLbl').textContent=`Page ${pos+1} of ${vis.length}`;
   pages.forEach((p,i)=>p.thumb&&p.thumb.classList.toggle('cur',i===curPage));
 }
 let scrollRaf=0;
@@ -1018,9 +1082,9 @@ function readImage(file){
     fr.onerror=()=>rej(fr.error); fr.readAsDataURL(file);
   });
 }
-function addImage(im){
+function addImage(im,maxW){
   const pi=curPage; const p=pages[pi]; const id='img'+(uid++); images[id]={url:im.url,mime:im.mime};
-  const w=Math.min(im.w, p.w*.4), h=w*im.h/im.w;
+  const w=Math.min(im.w, maxW||p.w*.4), h=w*im.h/im.w;
   const pr=p.el.getBoundingClientRect(), vr=viewer.getBoundingClientRect();
   const cy=(vr.top+vr.height/2-pr.top)/zoom;
   const o={id:uid++,type:'image',kind:'image',img:id,x:(p.w-w)/2,y:clamp(cy-h/2,10,Math.max(10,p.h-h-10)),w,h,opacity:1};
@@ -1029,7 +1093,7 @@ function addImage(im){
 }
 
 /* ---------- saving ---------- */
-\$('#btnSave').onclick=savePdf;
+$('#btnSave').onclick=savePdf;
 const dataUrlBytes=url=>{ const b=atob(url.split(',')[1]); const a=new Uint8Array(b.length); for(let i=0;i<b.length;i++)a[i]=b.charCodeAt(i); return a; };
 function rasterText(o){
   const k=4, lines=o.text.split('\n'), c=document.createElement('canvas'), ctx=c.getContext('2d');
@@ -1040,11 +1104,11 @@ function rasterText(o){
   lines.forEach((l,i)=>ctx.fillText(l,0,(i*1.2+BASE[o.font])*o.size*k));
   return {url:c.toDataURL('image/png'), w:(w+4)/k, h:h/k};
 }
-const cleanName=n=>n.replace(/\.pdf\$/i,'').replace(/[\\/:*?"<>|\u0000-\u001f]/g,'').replace(/\s+/g,' ').trim().slice(0,120);
+const cleanName=n=>n.replace(/\.pdf$/i,'').replace(/[\\/:*?"<>|\u0000-\u001f]/g,'').replace(/\s+/g,' ').trim().slice(0,120);
 let lastSaveName='';
 function askName(def){
   return new Promise(res=>{
-    const m=\$('#nameModal'), i=$('#nameIn'), h=$('#nameHint');
+    const m=$('#nameModal'), i=$('#nameIn'), h=$('#nameHint');
     i.value=def; h.textContent='Choose a name for your edited copy. Your original file is not changed.'; h.classList.remove('err');
     m.hidden=false; setTimeout(()=>{ i.focus(); i.select(); },40);
     const done=v=>{ m.hidden=true; m.onclick=null; i.onkeydown=null; res(v); };
@@ -1056,7 +1120,7 @@ function askName(def){
 async function savePdf(){
   if(!pdfDoc) return;
   if(document.activeElement&&document.activeElement.isContentEditable) document.activeElement.blur();
-  const name=await askName(lastSaveName||(fileName.replace(/\.pdf\$/i,'')+'-edited'));
+  const name=await askName(lastSaveName||(fileName.replace(/\.pdf$/i,'')+'-edited'));
   if(!name) return;
   lastSaveName=name;
   busy('Preparing your PDF…');
@@ -1131,13 +1195,14 @@ async function deliver(bytes,name){
 /* ---------- keyboard, drag & drop ---------- */
 let nudgeT=0;
 window.addEventListener('keydown',e=>{
-  const ed=document.activeElement; const typing=ed&&(ed.isContentEditable||/^(INPUT|TEXTAREA|SELECT)\$/.test(ed.tagName));
+  const ed=document.activeElement; const typing=ed&&(ed.isContentEditable||/^(INPUT|TEXTAREA|SELECT)$/.test(ed.tagName));
   const mod=e.ctrlKey||e.metaKey;
   if(mod&&e.key.toLowerCase()==='s'){ e.preventDefault(); savePdf(); return; }
   if(typing){ if(e.key==='Escape'&&ed.isContentEditable) ed.blur(); return; }
   if(!pdfDoc) return;
   if(mod&&e.key.toLowerCase()==='z'){ e.preventDefault(); e.shiftKey?redo():undo(); return; }
   if(mod&&e.key.toLowerCase()==='y'){ e.preventDefault(); redo(); return; }
+  if(mod&&e.key.toLowerCase()==='d'){ e.preventDefault(); dupSel(); return; }
   if((e.key==='Delete'||e.key==='Backspace')&&sel){ e.preventDefault(); deleteSel(); return; }
   if(e.key==='Escape'){ select(null); setTool('select'); return; }
   if(sel&&e.key.startsWith('Arrow')){
@@ -1172,18 +1237,212 @@ window.addEventListener('resize',()=>{ if(!pdfDoc) return; });
   viewer.addEventListener('touchend',e=>{ if(e.touches.length<2) d0=0; },{passive:true});
 })();
 
+/* ---------- dark / light mode ---------- */
+const themeBtn=$('#btnTheme'), themeMeta=document.querySelector('meta[name="theme-color"]'), mqDark=matchMedia('(prefers-color-scheme: dark)');
+let themeSaved=false; try{ themeSaved=!!localStorage.getItem('leaf-theme'); }catch(e){}
+const curTheme=()=>document.documentElement.getAttribute('data-theme')||(mqDark.matches?'dark':'light');
+function applyTheme(t,save){
+  document.documentElement.setAttribute('data-theme',t);
+  themeBtn.setAttribute('aria-checked',String(t==='dark'));
+  themeBtn.title=t==='dark'?'Switch to light mode':'Switch to dark mode';
+  if(themeMeta) themeMeta.setAttribute('content',t==='dark'?'#242a33':'#0b7a6b');
+  if(save){ themeSaved=true; try{ localStorage.setItem('leaf-theme',t); }catch(e){} }
+}
+applyTheme(curTheme(),false);
+themeBtn.addEventListener('click',()=>applyTheme(curTheme()==='dark'?'light':'dark',true));
+if(mqDark.addEventListener) mqDark.addEventListener('change',e=>{ if(!themeSaved) applyTheme(e.matches?'dark':'light',false); });
+
+/* ---------- opening animation (3 seconds, tap to skip) ---------- */
+(function(){
+  const sp=$('#splash'); if(!sp) return;
+  const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches; let gone=false;
+  const done=()=>{ if(gone) return; gone=true; sp.remove(); document.body.classList.remove('booting'); };
+  setTimeout(()=>document.body.classList.remove('booting'),reduce?400:2450);
+  setTimeout(done,reduce?600:3000);
+  sp.addEventListener('click',()=>{ document.body.classList.remove('booting'); sp.classList.add('skip'); setTimeout(done,260); });
+})();
+
+/* ---------- helpers ---------- */
+const loadScript=src=>new Promise((res,rej)=>{
+  if(document.querySelector('script[data-src="'+src+'"]')) return res();
+  const s=document.createElement('script'); s.src=src; s.dataset.src=src; s.onload=res; s.onerror=()=>rej(new Error('Could not load '+src)); document.head.append(s);
+});
+const FN={ocr:openOcr, sign:openSign, help:openHelp};
+
+/* ---------- scanned pages: detect + OCR ---------- */
+async function detectScanned(){
+  try{
+    const tc=await pages[0].pdf.getTextContent();
+    if(!tc.items.some(i=>i.str&&i.str.trim())){
+      toast('This looks like a scanned PDF. Tap Scan text to make it editable.');
+      const b=document.querySelector('[data-fn=ocr]'); if(b) b.classList.add('pulse');
+    }
+  }catch(e){}
+}
+let ocrWorker=null, ocrCancelled=false;
+function openOcr(){
+  if(!pdfDoc){ toast('Open a PDF first.'); return; }
+  const b=document.querySelector('[data-fn=ocr]'); if(b) b.classList.remove('pulse');
+  if(location.protocol==='file:'){
+    info('Scan text needs the hosted app','<p>Reading scanned pages loads extra engine files, which a single local file cannot do.</p><p>Put the Leaf folder online (the README shows a free way, it takes about a minute) or run it with <b>npm start</b>, then open the website link.</p>');
+    return;
+  }
+  $('#ocrProg').hidden=true; $('#ocrGo').disabled=false; $('#ocrMsg').textContent=''; $('#ocrBar').style.width='0';
+  $('#ocrModal').hidden=false;
+}
+$('#ocrCancel').addEventListener('click',()=>{ ocrCancelled=true; if(ocrWorker){ try{ocrWorker.terminate()}catch(e){} } $('#ocrModal').hidden=true; });
+$('#ocrGo').addEventListener('click',doOcr);
+
+/* Table borders and ruled lines confuse the reader, so erase long dark lines
+   from the temporary copy that is scanned (the page you see is not touched). */
+function removeRules(c){
+  const W=c.width,H=c.height,cx=c.getContext('2d'),im=cx.getImageData(0,0,W,H),d=im.data,N=W*H,lum=new Float32Array(N);
+  let sum=0; for(let q=0,i=0;q<N;q++,i+=4){ const l=d[i]*.3+d[i+1]*.59+d[i+2]*.11; lum[q]=l; sum+=l; }
+  const mean=sum/N; if(mean<110) return;
+  const thr=mean*.6, kill=new Uint8Array(N), minH=Math.round(W*.06), minV=Math.round(H*.05);
+  for(let y=0;y<H;y++){ let x=0; while(x<W){ if(lum[y*W+x]>=thr){x++;continue;} let x2=x; while(x2<W&&lum[y*W+x2]<thr) x2++; if(x2-x>=minH) for(let t=x;t<x2;t++) kill[y*W+t]=1; x=x2; } }
+  for(let x=0;x<W;x++){ let y=0; while(y<H){ if(lum[y*W+x]>=thr){y++;continue;} let y2=y; while(y2<H&&lum[y2*W+x]<thr) y2++; if(y2-y>=minV) for(let t=y;t<y2;t++) kill[t*W+x]=1; y=y2; } }
+  for(let q=0;q<N;q++){ if(!kill[q]) continue; const x=q%W, y=(q/W)|0;
+    for(let dy=-2;dy<=2;dy++){ const yy=y+dy; if(yy<0||yy>=H) continue; for(let dx=-2;dx<=2;dx++){ const xx=x+dx; if(xx<0||xx>=W) continue; const i=(yy*W+xx)*4; d[i]=d[i+1]=d[i+2]=255; } } }
+  cx.putImageData(im,0,0);
+}
+function ocrRuns(data,s){
+  const lines=data.lines||((data.blocks||[]).flatMap(b=>(b.paragraphs||[]).flatMap(p=>p.lines||[])));
+  const runs=[];
+  const push=grp=>{
+    if(!grp.length) return;
+    const str=grp.map(w=>w.text).join(' ').trim(); if(!str) return;
+    const x0=Math.min(...grp.map(w=>w.bbox.x0)), x1=Math.max(...grp.map(w=>w.bbox.x1));
+    const y0=Math.min(...grp.map(w=>w.bbox.y0)), y1=Math.max(...grp.map(w=>w.bbox.y1));
+    const desc=/[gjpqy,;()\[\]{}|@_]/.test(str), hb=y1-y0;
+    const size=Math.max(5,(desc?hb/.95:hb/.74)/s), base=(desc?y1-.21*(hb/.95):y1)/s;
+    if(size>220) return;
+    const i=runs.length;
+    runs.push({x:x0/s,y:base,h:size,w:(x1-x0)/s,str,family:'Helvetica',bold:false,italic:false,top:base-size*.92,bh:size*1.18,key:'ocr'+i});
+  };
+  lines.forEach(line=>{
+    const words=(line.words||[]).filter(w=>w.text&&w.text.trim()&&w.confidence>=25&&w.bbox);
+    if(!words.length) return;
+    const lh=Math.max(...words.map(w=>w.bbox.y1-w.bbox.y0));
+    let grp=[words[0]];
+    for(let i=1;i<words.length;i++){
+      if(words[i].bbox.x0-words[i-1].bbox.x1>lh*.9){ push(grp); grp=[]; }   // big gap = separate table cell / column
+      grp.push(words[i]);
+    }
+    push(grp);
+  });
+  return runs;
+}
+async function doOcr(){
+  const lang=$('#ocrLang').value, all=$('#ocrScope').value==='all';
+  const idx=all?visibleIndexes():[curPage];
+  const msg=t=>{ $('#ocrMsg').textContent=t; }, bar=f=>{ $('#ocrBar').style.width=Math.round(clamp(f,0,1)*100)+'%'; };
+  $('#ocrGo').disabled=true; $('#ocrProg').hidden=false; ocrCancelled=false;
+  msg('Loading the reading engine (first time only)…'); bar(.03);
+  let found=0, done=0, sub=0;
+  try{
+    await loadScript('vendor/tesseract/tesseract.min.js');
+    const abs=p=>new URL(p,location.href).href;
+    ocrWorker=await Tesseract.createWorker(lang,1,{
+      workerPath:abs('vendor/tesseract/worker.min.js'), corePath:abs('vendor/tesseract'), langPath:abs('vendor/tesseract/lang'),
+      logger:m=>{ if(m.status==='recognizing text'){ sub=m.progress; bar(.08+(done+sub)/idx.length*.9); } }
+    });
+    for(const pi of idx){
+      if(ocrCancelled) break;
+      msg('Reading page '+(done+1)+' of '+idx.length+'…');
+      const p=pages[pi], s=clamp(2200/p.w,1.5,4), vp=p.pdf.getViewport({scale:s});
+      const c=document.createElement('canvas'); c.width=Math.floor(vp.width); c.height=Math.floor(vp.height);
+      const cx=c.getContext('2d'); cx.fillStyle='#fff'; cx.fillRect(0,0,c.width,c.height);
+      await p.pdf.render({canvasContext:cx,viewport:vp}).promise;
+      removeRules(c);
+      const res=await ocrWorker.recognize(c);
+      const runs=ocrRuns(res.data,s);
+      p.ocrRuns=runs; p.runsP=Promise.resolve(runs); p.ocr=true; p.hinted=false; found+=runs.length; done++; sub=0;
+      bar(.08+done/idx.length*.9);
+    }
+  }catch(err){
+    if(!ocrCancelled){ console.error(err); toast('Could not read this page. '+(err&&err.message?err.message:'')); }
+  }finally{
+    try{ if(ocrWorker) await ocrWorker.terminate(); }catch(e){}
+    ocrWorker=null; $('#ocrModal').hidden=true; $('#ocrGo').disabled=false;
+  }
+  if(found){ setTool('edittext'); toast('Found '+found+' editable lines. Tap any line to change it.'); }
+  else if(!ocrCancelled) toast('No text found. Try a clearer scan, or pick another language.');
+}
+
+/* ---------- signature pad ---------- */
+let signInk='#111111', signHas=false;
+function openSign(){
+  if(!pdfDoc){ toast('Open a PDF first.'); return; }
+  const c=$('#signPad'); c.getContext('2d').clearRect(0,0,c.width,c.height); signHas=false; $('#signModal').hidden=false;
+}
+(function(){
+  const c=$('#signPad'), ctx=c.getContext('2d'); let down=false,last=null,lastMid=null;
+  ctx.lineCap='round'; ctx.lineJoin='round';
+  const pt=e=>{ const r=c.getBoundingClientRect(); return [(e.clientX-r.left)*c.width/r.width,(e.clientY-r.top)*c.height/r.height]; };
+  c.addEventListener('pointerdown',e=>{
+    e.preventDefault(); try{ c.setPointerCapture(e.pointerId); }catch(x){}
+    down=true; last=lastMid=pt(e); ctx.strokeStyle=signInk; ctx.lineWidth=8;
+    ctx.beginPath(); ctx.moveTo(last[0],last[1]); ctx.lineTo(last[0]+.1,last[1]); ctx.stroke(); signHas=true;
+  });
+  c.addEventListener('pointermove',e=>{
+    if(!down) return; const p=pt(e), mid=[(last[0]+p[0])/2,(last[1]+p[1])/2];
+    ctx.beginPath(); ctx.moveTo(lastMid[0],lastMid[1]); ctx.quadraticCurveTo(last[0],last[1],mid[0],mid[1]); ctx.stroke();
+    last=p; lastMid=mid;
+  });
+  const up=()=>{ down=false; }; c.addEventListener('pointerup',up); c.addEventListener('pointercancel',up);
+  document.querySelectorAll('.ink').forEach(b=>b.addEventListener('click',()=>{
+    signInk=b.dataset.ink; document.querySelectorAll('.ink').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));
+  }));
+  $('#signClear').addEventListener('click',()=>{ ctx.clearRect(0,0,c.width,c.height); signHas=false; });
+  $('#signCancel').addEventListener('click',()=>{ $('#signModal').hidden=true; });
+  $('#signOk').addEventListener('click',()=>{
+    if(!signHas){ toast('Draw your signature first.'); return; }
+    const d=ctx.getImageData(0,0,c.width,c.height).data; let x0=c.width,y0=c.height,x1=0,y1=0;
+    for(let y=0;y<c.height;y++) for(let x=0;x<c.width;x++){ if(d[(y*c.width+x)*4+3]>10){ if(x<x0)x0=x; if(x>x1)x1=x; if(y<y0)y0=y; if(y>y1)y1=y; } }
+    const pad=12, w=x1-x0+1+pad*2, h=y1-y0+1+pad*2, t=document.createElement('canvas'); t.width=w; t.height=h;
+    t.getContext('2d').drawImage(c,x0-pad,y0-pad,w,h,0,0,w,h);
+    $('#signModal').hidden=true; addImage({url:t.toDataURL('image/png'),mime:'image/png',w,h},170);
+    toast('Signature added. Drag it into place.');
+  });
+})();
+
+/* ---------- stamps, duplicate, help ---------- */
+function placeStamp(pi,pt){
+  const d=DEF.stamp; const t=d.type==='Date'?new Date().toLocaleDateString('en-GB'):d.type;
+  const o={id:uid++,type:'text',kind:'text',x:pt.x-d.size*.4,y:pt.y-d.size*.6,text:t,font:'Helvetica',size:d.size,bold:false,italic:false,color:d.color};
+  pages[pi].objects.push(o); renderOverlay(pi); commit();
+}
+function dupSel(){
+  if(!sel) return; const f=findObj(sel); if(!f||f.o.type==='cover') return;
+  const c=JSON.parse(JSON.stringify(f.o)); c.id=uid++; delete c.fresh; delete c.fromRun; delete c.hasCover; delete c.coverId;
+  const off=14; if(c.type==='draw'){ c.points=c.points.map(p=>[p[0]+off,p[1]+off]); calcBBox(c); } else { c.x+=off; c.y+=off; }
+  pages[f.pi].objects.push(c); sel=c.id; selPage=f.pi; renderOverlay(f.pi); renderProps(); commit();
+}
+function openHelp(){
+  info('Quick guide','<ol>'
+   +'<li><b>Open</b> a PDF (it stays on your device).</li>'
+   +'<li><b>Edit text</b>: tap a line, retype it. For a scanned PDF, tap <b>Scan text</b> first.</li>'
+   +'<li><b>Add text</b>, <b>Image</b>, <b>Sign</b> or a <b>Stamp</b> (tick, cross, date).</li>'
+   +'<li><b>Highlight</b>, <b>Box</b>, <b>Draw</b> or <b>Whiteout</b> to mark up the page.</li>'
+   +'<li><b>Select</b> to move, resize, <b>Duplicate</b> or delete things.</li>'
+   +'<li><b>Save PDF</b>, choose a name, done.</li></ol>'
+   +'<p style="margin-top:10px"><b>Shortcuts:</b> Ctrl+S save, Ctrl+Z undo, Ctrl+Y redo, Ctrl+D duplicate, Delete remove, Esc deselect.</p>'
+   +'<p>Use the sun/moon switch at the top for dark mode.</p>');
+}
+
 /* ---------- add to home screen + offline ---------- */
 let installEvt=null;
 const isStandalone=()=>matchMedia('(display-mode: standalone)').matches||navigator.standalone===true;
-if(isStandalone()) \$('#btnInstall').hidden=true;
+if(isStandalone()) $('#btnInstall').hidden=true;
 window.addEventListener('beforeinstallprompt',e=>{ e.preventDefault(); installEvt=e; });
-window.addEventListener('appinstalled',()=>{ installEvt=null; \$('#btnInstall').hidden=true; toast('Leaf was added to your home screen.'); });
+window.addEventListener('appinstalled',()=>{ installEvt=null; $('#btnInstall').hidden=true; toast('Leaf was added to your home screen.'); });
 function info(title,html){
-  $('#infoT').textContent=title; $('#infoB').innerHTML=html; const m=\$('#infoModal'); m.hidden=false;
-  const close=()=>{ m.hidden=true; \$('#infoOk').onclick=null; m.onclick=null; };
-  \$('#infoOk').onclick=close; m.onclick=e=>{ if(e.target===m) close(); };
+  $('#infoT').textContent=title; $('#infoB').innerHTML=html; const m=$('#infoModal'); m.hidden=false;
+  const close=()=>{ m.hidden=true; $('#infoOk').onclick=null; m.onclick=null; };
+  $('#infoOk').onclick=close; m.onclick=e=>{ if(e.target===m) close(); };
 }
-\$('#btnInstall').addEventListener('click',async()=>{
+$('#btnInstall').addEventListener('click',async()=>{
   if(installEvt){ installEvt.prompt(); try{ await installEvt.userChoice; }catch(e){} installEvt=null; return; }
   const ua=navigator.userAgent, ios=/iPhone|iPad|iPod/i.test(ua)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1), android=/Android/i.test(ua);
   if(location.protocol==='file:'){
@@ -1199,20 +1458,9 @@ function info(title,html){
 if('serviceWorker' in navigator && location.protocol.startsWith('http')){
   window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(e=>console.warn('Offline mode unavailable',e)));
 }
-if('launchQueue' in window){
+if('launchQueue' in window){           // "Open with Leaf" for installed desktop/Android apps
   launchQueue.setConsumer(async p=>{ if(p.files&&p.files.length){ try{ loadFile(await p.files[0].getFile()); }catch(e){} } });
 }
-
-/* ---------- Hide Splash Screen on Load ---------- */
-window.addEventListener('load', () => {
-  setTimeout(() => {
-    const splash = \$('#splash');
-    if (splash) {
-      splash.classList.add('fade-out');
-      setTimeout(() => splash.remove(), 400);
-    }
-  }, 250);
-});
 
 /* ---------- start ---------- */
 setTool('select');

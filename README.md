@@ -6,6 +6,8 @@ A free PDF editor that runs **entirely in the browser**. Open a PDF, change its 
 
 - No sign-in, no server, no database, no cost.
 - Files are never uploaded. All work happens in the browser tab.
+- Reads **scanned PDFs and photos of documents** (OCR) so every line becomes editable.
+- Light and dark mode, signature pad, tick/cross/date stamps, duplicate, and a 3-second opening animation.
 - Installable on Android, iPhone, Windows, Mac and Linux (PWA), and works offline.
 - Can be packaged as an Android APK (see [Part 5](#5-make-an-android-apk)).
 
@@ -60,6 +62,7 @@ leaf-pdf-editor/
 │   ├── pdf.min.js          pdf.js 3.11.174 – shows PDF pages and reads their text
 │   ├── pdf.worker.min.js   pdf.js background worker
 │   ├── pdf-lib.min.js      pdf-lib 1.17.1 – writes the edited PDF
+│   ├── tesseract/          Tesseract.js 5.1.1 OCR engine + English and Hindi language data (about 12 MB, loaded only when you tap Scan text)
 │   ├── fonts.css           Local @font-face rules
 │   ├── fonts/              Figtree and Instrument Serif (woff2)
 │   └── LICENSE-*.txt       Licences of the bundled libraries and fonts
@@ -182,12 +185,24 @@ Create a Google Play developer account (one-time fee of about US$25), upload the
 9. **Undo / redo** – buttons at the top, or Ctrl+Z / Ctrl+Y.
 10. **Save PDF** – a box asks what to call the file. Type any name you like (the app adds `.pdf`), then tap **Save**. It downloads to your device. Characters that are not allowed in file names are removed automatically. The box suggests `originalname-edited` and remembers your last name during the session (Ctrl+S also opens it). Your original file is never changed.
 
+### New tools
+
+| Tool | What it does |
+|---|---|
+| **Scan text** | For scanned PDFs or photos of documents. Choose a language and either the current page or all pages. Leaf reads the page (OCR) and every line, or every table cell, becomes tappable in **Edit text**. The first scan loads the reading engine, so give it a few seconds. Leaf also offers this automatically when it sees a PDF with no real text. |
+| **Sign** | Draw your signature with a finger or mouse (black or blue ink). It is cropped and placed on the page as an image you can move and resize. |
+| **Stamp** | Pick a tick, cross, dot or today's date, then tap the page to place it. Good for forms. |
+| **Duplicate** | Select anything, then use Duplicate (or Ctrl+D) to copy it. |
+| **Sun/moon switch** | Top bar. Switches between light and dark mode and remembers your choice on this device. |
+| **Help** | End of the toolbar. A short guide with shortcuts. |
+
 ### Keyboard shortcuts
 | Keys | Action |
 |---|---|
 | Ctrl/Cmd + S | Save PDF |
 | Ctrl/Cmd + Z | Undo |
 | Ctrl/Cmd + Y or Shift + Ctrl/Cmd + Z | Redo |
+| Ctrl/Cmd + D | Duplicate selected item |
 | Delete / Backspace | Delete selected item |
 | Arrow keys (Shift = 10×) | Nudge selected item |
 | Esc | Deselect and return to Select tool |
@@ -218,6 +233,10 @@ Create a Google Play developer account (one-time fee of about US$25), upload the
 | `snap` / `commit` / `undo` | History |
 | `savePdf` | Writes the final PDF |
 | `askName` / `savePdf` | Asks for the file name, then writes the final PDF |
+| `doOcr` / `removeRules` / `ocrRuns` | Scan text: renders the page, erases table borders from a temporary copy, runs Tesseract, and turns the result into editable lines |
+| `openSign` / `placeStamp` / `dupSel` | Signature pad, stamps, duplicate |
+| `applyTheme` | Dark/light switch (saved in the browser as `leaf-theme`) |
+| `#splash` (HTML and CSS) | The 3-second opening animation |
 | `deliver` | Downloads the file (uses a normal download link) |
 | `btnInstall` handler | Add to Home screen prompt or device-specific steps |
 
@@ -234,6 +253,8 @@ If you paste this project into a tool such as Bolt, Lovable, Replit, v0, Cursor 
 
 ## 8. Customising
 
+- **Opening animation** – it is the `<div id="splash">` block plus the CSS under "opening animation". To change the length, edit the `2.5s`/`3000` values (CSS `animation` delays and the two `setTimeout` numbers in the script). To remove it, delete the `#splash` block. It is shortened automatically for people who set "reduce motion". Tapping it skips it.
+- **OCR languages** – English and Hindi are bundled in `vendor/tesseract/lang/`. To add another (Tamil, Telugu, Kannada, Malayalam, Bengali, Marathi, Gujarati, Arabic and so on), download `<code>.traineddata.gz` (for example `tam.traineddata.gz`) from the npm package `@tesseract.js-data/<code>` (folder `4.0.0_best_int`), put it in `vendor/tesseract/lang/`, then add `<option value="tam">Tamil</option>` to the `#ocrLang` select in `index.html`. Combine languages with a plus sign, for example `eng+tam`. Each language adds 1 to 5 MB.
 - **Footer credit** – edit the `<footer class="foot">` line near the bottom of the page markup in `index.html`.
 - **Name and colours** – edit `manifest.webmanifest` (`name`, `short_name`, `theme_color`) and the CSS variables at the top of `index.html` (`--accent` and others, with a dark-mode block below).
 - **Icons** – replace the PNGs in `icons/` keeping the same sizes. Make the maskable one with the artwork inside the central 80%.
@@ -247,7 +268,9 @@ If you paste this project into a tool such as Bolt, Lovable, Replit, v0, Cursor 
 
 - **Edited text is covered, not erased.** The original text stays inside the saved file underneath a patch image, so it can still be selected or extracted with other tools. Do not rely on this to redact secrets. For real redaction use a dedicated tool.
 - **Not a full Acrobat clone.** There is no paragraph re-flow, no embedded-font matching, no form-field editing, no digital signatures, no OCR for scanned pages.
-- **Scanned PDFs** are images, so use **Add text** and **Whiteout** on them.
+- **Scanned PDFs** are images. Use **Scan text** (OCR) to make lines editable. OCR is not perfect: blurry, skewed, handwritten or very small text can be misread or missed, and you should check the result. If a line is missed, use **Add text** and **Whiteout** instead.
+- **OCR languages:** English is tested and works well. Hindi is included but marked experimental: on my test samples its accuracy was weak, so try it on your own documents before relying on it.
+- **OCR needs the hosted or installed app.** The single-file version cannot load the engine files; it shows a message instead. The first scan needs an internet connection to fetch the engine from your own site, after which it is cached for offline use.
 - **Password-protected PDFs** are not opened. Remove the password first.
 - **Rotated text** inside the PDF is not editable (it is shown but not detected as editable).
 - **Very large files** (hundreds of pages or hundreds of MB) depend on the device's memory.
@@ -263,6 +286,8 @@ If you paste this project into a tool such as Bolt, Lovable, Replit, v0, Cursor 
 | Open button does nothing | Use a current browser. Some in-app viewers (inside chat or social apps) block file pickers; open the link in Chrome or Safari. |
 | "Only PDF files can be opened here" | The file is not a real PDF. Export it again from the source app. |
 | "Password-protected" message | Remove the password in the original viewer, then reopen. |
+| Scan text says it could not read the page | Open the hosted link, not a local file. Make sure the whole `vendor/tesseract` folder (including `lang`) was uploaded. If your host rewrites `.gz` files, add a rule to serve them unchanged. |
+| Scan text misses some lines | Try a higher-quality scan, pick the right language, or use Add text on the missed line. |
 | Install button missing | Needs https, a visited-twice visit on some browsers, and not already installed. On iPhone use Share → Add to Home Screen. |
 | App shows an old version after an update | Bump `CACHE_VERSION` in `sw.js`, redeploy, then close and reopen the app (or clear site data once). |
 | Edited text looks slightly different from the original | Saved text uses standard fonts. Change the font, size and bold in the property bar to get closest. |

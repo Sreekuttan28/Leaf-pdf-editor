@@ -1,6 +1,6 @@
 /* Leaf PDF Editor – service worker (offline support)
    Bump CACHE_VERSION whenever you change any file so installed apps pick up the update. */
-const CACHE_VERSION = 'leaf-v3';
+const CACHE_VERSION = 'leaf-v4';
 const ASSETS = [
   './', 'index.html', 'manifest.webmanifest',
   'vendor/pdf.min.js', 'vendor/pdf.worker.min.js', 'vendor/pdf-lib.min.js', 'vendor/fonts.css',
